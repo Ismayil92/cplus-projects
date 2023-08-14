@@ -8,9 +8,12 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 using boost::asio::ip::udp;
 
+static std::vector<uchar> recv_buffer_;
 
 class UDPListener{
 
@@ -35,7 +38,7 @@ class UDPListener{
         udp::socket socket_;
         udp::endpoint remote_endp_;
         
-        boost::array<char, 1024> recv_buffer_{};
+        //boost::array<uchar, 1024> recv_buffer_{};
         
         void start_receive()       
         {
@@ -51,15 +54,24 @@ class UDPListener{
             
         }
 
-        void handle_receive(boost::array<char, 1024> buffer_,
+        void handle_receive(std::vector<uchar> buffer_, //boost::array<char, 1024> buffer_,
                             const boost::system::error_code& error,
                             std::size_t d)
         {
             if(!error)
             {
                 std::cout<<"Data size received: "<<d<<std::endl;
-                for(const char& c : buffer_){
-                    if(isascii(c))  std::cout<<c;
+                cv::Mat img {imdecode(buffer_, cv::IMREAD_COLOR)};
+                
+                try{
+                    cv::imshow("image",img);
+                }
+                catch(const std::runtime_error& e)
+                {
+                    std::cerr<<e.what()<<std::endl;
+                }
+                for(const uchar& c : buffer_){
+                    if(isascii(c))  std::cout<<c;                    
                 }
                  
                 start_receive();
@@ -78,6 +90,7 @@ int main()
         boost::asio::io_context io;
         UDPListener listener(io);
         listener.readData();
+
         io.run();
     }
     catch(const std::exception& e)
