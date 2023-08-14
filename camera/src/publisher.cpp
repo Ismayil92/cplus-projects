@@ -127,7 +127,7 @@ int main()
             std::future_status publisher_status_{data_publisher.wait_for(1ms)};  
             std::future_status streamer_status_{video_streamer.wait_for(1ms)};
             
-            if(img_queue.size()<12 && img_queue.size()>1)
+            if(!img_queue.empty())
             {
                 std::cout<<"Image Encoder running!!!\n";
                 img_ = img_queue.front();
@@ -135,9 +135,12 @@ int main()
                         img_,
                         img_buffer, //this is std::vector
                         {cv::IMWRITE_JPEG_QUALITY, 100});
-                img_queue.pop();                
+                if(img_queue.size()>1)
+                {
+                   img_queue.pop();       
+                }                              
             }
-            else if(img_queue.size()==0) 
+            else
             {
                 std::cout<<"Image buffer queue is empty!!!\n";
             }  
