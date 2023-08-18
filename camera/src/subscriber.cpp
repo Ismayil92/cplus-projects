@@ -21,7 +21,7 @@ using boost::asio::ip::udp;
 
 using namespace std::chrono_literals;
 
-
+std::vector<unsigned char> img_buffer;
 
 enum STATUS {
     READY,
@@ -54,7 +54,7 @@ class UDPListener{
         udp::socket socket_;
         udp::endpoint remote_endp_;        
         boost::array<unsigned char, 400000> recv_buffer{};
-        
+
         void start_receive()       
         {                   
             socket_.async_receive_from( 
@@ -72,7 +72,13 @@ class UDPListener{
         {
             if(!error)
             {
-                std::cout<<"Data size received: "<<d<<std::endl; 
+                if(!img_buffer.empty()) img_buffer.clear();
+                if(d){
+                   
+                    std::copy_n(recv_buffer.begin(), d,
+                                 std::back_inserter(img_buffer)); 
+                }
+                std::cout<<"img buffer size:"<<img_buffer.size()<<std::endl;
                 start_receive();          
             }
             else{
@@ -82,6 +88,21 @@ class UDPListener{
         
 }; 
 
+void streamDecoder()
+{
+    while(true){
+        if(!img_buffer.empty()){
+            std::cout<<"Image Decoder running!!!\n";
+            cv::Mat img = cv::imdecode(img_buffer, cv::IMREAD_COLOR);            
+            cv::imshow("recv_img", img);
+            cv::waitKey(3);            
+        }
+        else{
+            std::cerr<<"Image is not available!!!\n";
+        }
+        std::this_thread::sleep_for(30ms);
+    }
+}
 
 int main()
 {
@@ -89,10 +110,12 @@ int main()
     {   
         uint16_t host_port{45500};
         uint16_t remote_port{45449};
+        
+        std::future<void> stream_display {std::async(std::launch::async, streamDecoder)};
+
         boost::asio::io_context io;
         UDPListener listener(io, host_port, remote_port);
-        std::thread thr(&UDPListener::read,std::ref(listener));
-        if(thr.joinable()) thr.join();
+        listener.read();             
         
         io.run();
     }

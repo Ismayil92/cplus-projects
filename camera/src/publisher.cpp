@@ -70,7 +70,7 @@ bool transferData(const std::string remote_ip_,
                 io.run();
                                             
             }
-            std::this_thread::sleep_for(3ms);
+            std::this_thread::sleep_for(10ms);
         }        
     }
     else{
@@ -96,7 +96,7 @@ bool getStream()
         cap.read(img);
         img_queue.push(img);
         cv::imshow("image", img);
-        cv::waitKey(3);
+        cv::waitKey(10);
     }
     cap.release(); 
     return true;
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
                 std::cout<<"Image buffer queue is empty!!!\n";
             }  
 
-            std::this_thread::sleep_for(5ms);                 
+                             
         }
                 
     }
