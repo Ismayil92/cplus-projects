@@ -11,6 +11,7 @@
 #include <vector>
 #include <queue>
 #include <thread>
+#include "options.hpp"
 
 using namespace std::chrono_literals;
 using boost::asio::ip::udp;
@@ -42,12 +43,14 @@ void sendHandler(const boost::system::error_code& err){
     }
 }
 
-bool transferData(uint16_t host_port_, uint16_t remote_port_)
+bool transferData(const std::string remote_ip_,
+                    const uint16_t host_port_,
+                    const uint16_t remote_port_)
 {
     boost::asio::io_context io;
-    udp::endpoint host_ep{udp::v4(), 45449};
-    udp::endpoint remote_ep{boost::asio::ip::address_v4::from_string("127.0.0.1"), 
-                                    45500};
+    udp::endpoint host_ep{udp::v4(), host_port_};
+    udp::endpoint remote_ep{boost::asio::ip::address_v4::from_string(remote_ip_), 
+                                    remote_port_};
     udp::socket socket_{io, host_ep};
 
     socket_.async_connect(remote_ep, connectionHandler);
@@ -102,11 +105,15 @@ bool getStream()
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+    ArgParser args;
+    args.parse(argc, argv);
+
     cv::Mat img_;
-    uint16_t host_port{45449};
-    uint16_t remote_port{45500};
+    const uint16_t host_port{args.getHostPort()};
+    const uint16_t remote_port{args.getRemotePort()};
+    const std::string remote_ip{args.getRemoteIP()};
     try
     {
 
@@ -115,8 +122,10 @@ int main()
 
         std::future<bool> data_publisher{std::async(std::launch::async,
                                          transferData,
+                                         remote_ip,
                                          host_port,
-                                         remote_port)};
+                                         remote_port
+                                         )};
         
         while(true)
         {        
