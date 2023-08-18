@@ -12,6 +12,7 @@
 #include <queue>
 #include <thread>
 #include "options.hpp"
+#include <mutex>
 
 using namespace std::chrono_literals;
 using boost::asio::ip::udp;
@@ -62,13 +63,13 @@ bool transferData(const std::string remote_ip_,
     
             if(status_ == READY)
             {
-               
+                
                 socket_.async_send_to(boost::asio::buffer(img_buffer, img_buffer.size()), 
                                         remote_ep,
                                         boost::bind(&sendHandler,
                                                     boost::asio::placeholders::error));
                 io.run();
-                                            
+                                        
             }
             std::this_thread::sleep_for(10ms);
         }        
@@ -137,10 +138,12 @@ int main(int argc, char** argv)
             {
                 std::cout<<"Image Encoder running!!!\n";
                 img_ = img_queue.front();
+                
                 cv::imencode(".jpg",
                         img_,
                         img_buffer, //this is std::vector
                         {cv::IMWRITE_JPEG_QUALITY, 100});
+               
                 if(img_queue.size()>1)
                 {
                    img_queue.pop();       

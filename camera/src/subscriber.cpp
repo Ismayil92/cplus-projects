@@ -16,9 +16,10 @@
 #include <utility>
 #include <chrono>
 #include <future> 
+#include <mutex>
+
 
 using boost::asio::ip::udp;
-
 using namespace std::chrono_literals;
 
 std::vector<unsigned char> img_buffer;
@@ -73,10 +74,9 @@ class UDPListener{
             if(!error)
             {
                 if(!img_buffer.empty()) img_buffer.clear();
-                if(d){
-                   
+                if(d){                   
                     std::copy_n(recv_buffer.begin(), d,
-                                 std::back_inserter(img_buffer)); 
+                                 std::back_inserter(img_buffer));                     
                 }
                 std::cout<<"img buffer size:"<<img_buffer.size()<<std::endl;
                 start_receive();          
@@ -90,17 +90,21 @@ class UDPListener{
 
 void streamDecoder()
 {
-    while(true){
+    while(true)
+    {
         if(!img_buffer.empty()){
+            
             std::cout<<"Image Decoder running!!!\n";
-            cv::Mat img = cv::imdecode(img_buffer, cv::IMREAD_COLOR);            
+            cv::Mat img = cv::imdecode(img_buffer, cv::IMREAD_COLOR);           
             cv::imshow("recv_img", img);
-            cv::waitKey(3);            
+            cv::waitKey(3); 
+            std::this_thread::sleep_for(30ms);
+                    
         }
         else{
             std::cerr<<"Image is not available!!!\n";
+            std::this_thread::sleep_for(1s);
         }
-        std::this_thread::sleep_for(30ms);
     }
 }
 
@@ -115,9 +119,9 @@ int main()
 
         boost::asio::io_context io;
         UDPListener listener(io, host_port, remote_port);
-        listener.read();             
+        listener.read();   
+        io.run();              
         
-        io.run();
     }
     catch(const std::exception& e)
     {
