@@ -109,6 +109,7 @@ int main(int argc, char** argv)
 {
     ArgParser args;
     args.parse(argc, argv);
+    args.help();
 
     cv::Mat img_;
     const uint16_t host_port{args.getHostPort()};
