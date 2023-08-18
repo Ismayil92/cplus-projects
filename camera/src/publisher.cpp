@@ -10,15 +10,12 @@
 #include <future>
 #include <vector>
 #include <queue>
-#include <mutex>
-#include <condition_variable>
 #include <thread>
 
 using namespace std::chrono_literals;
 using boost::asio::ip::udp;
 
 static std::vector<unsigned char> img_buffer;
-static std::mutex mx;
 static std::queue<cv::Mat> img_queue;
 
 
