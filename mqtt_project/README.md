@@ -1,0 +1,1 @@
+![Diagram of the project](image.png)
