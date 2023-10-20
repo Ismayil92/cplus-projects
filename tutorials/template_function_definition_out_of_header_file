@@ -1,0 +1,67 @@
+assume you have header file pointcloud.hpp.
+you have created template class and want to define template class function in pointcloud.cpp file
+
+EXAMPLE:
+
+// pointcloud.hpp
+
+template<typename ELEMENT_TYPE> 
+class PointCloud{
+    public:
+        PointCloud(int height_, int width_);
+        PointCloud(const PointCloud& cloud);
+        PointCloud(const VertexVec& mesh_vertex);
+        ~PointCloud();
+
+        void fillCloud(const VertexVec& mesh_vertex);
+        ELEMENT_TYPE*  getContainer() const  {return container;}
+    private:
+        int width;
+        int height;
+        ALIGN4 ELEMENT_TYPE* container; 
+
+};
+
+//how to define class member function  in pointcloud.cpp file
+//pointcloud.cpp file
+
+//if you dont define which classes it can template as below then you can 
+//get linking error.
+template class PointCloud<PointXYZ>;
+template class PointCloud<PointXYZRGB>;
+
+template<typename ELEMENT_TYPE> 
+PointCloud<ELEMENT_TYPE>::PointCloud(int height_, int width_): width{width_},
+                                                            height{height_},
+                                                            container{new ELEMENT_TYPE[width*height]}
+{
+    ..CODE...
+}
+
+
+template<typename ELEMENT_TYPE>  
+PointCloud<ELEMENT_TYPE>::PointCloud(const PointCloud& cloud)
+{
+    ..CODE...
+}
+
+
+template<typename ELEMENT_TYPE> 
+PointCloud<ELEMENT_TYPE>::PointCloud(const VertexVec& mesh_vertex): width{1},
+                                                                    height{static_cast<int>(mesh_vertex.size())},
+                                                                    container{new ELEMENT_TYPE[width*height]}
+{
+    ..CODE...
+}
+
+template<typename ELEMENT_TYPE> 
+PointCloud<ELEMENT_TYPE> ::~PointCloud()
+{
+   ..CODE...
+}
+
+template<typename ELEMENT_TYPE>
+void PointCloud<ELEMENT_TYPE>::fillCloud(const VertexVec& mesh_vertex)
+{
+    ..CODE...
+}
